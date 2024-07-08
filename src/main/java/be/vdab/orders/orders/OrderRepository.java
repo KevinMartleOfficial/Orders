@@ -42,16 +42,16 @@ public class OrderRepository {
                 .toList();
     }
 
-    public Optional<Integer> findOrderById(int id){
+    public Optional<Order> findOrderById(int id){
         String sql = """
-                select id
+                select id, werknemerId, omschrijving, bedrag, goedgekeurd 
                 from orders
                 where id = ?
                 for update
                 """;
         return jdbcClient.sql(sql)
                 .param(id)
-                .query(Integer.class)
+                .query(Order.class)
                 .optional();
     }
 
@@ -73,7 +73,7 @@ public class OrderRepository {
         String sql = """
                 update orders
                 set goedgekeurd = ?
-                where id =?
+                where id = ?
                 """;
         jdbcClient.sql(sql)
                 .params(order.getGoedgekeurd(), order.getId())

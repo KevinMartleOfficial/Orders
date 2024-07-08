@@ -1,6 +1,7 @@
 package be.vdab.orders.orders;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.internal.matchers.Or;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -8,6 +9,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.jdbc.JdbcTestUtils;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -33,6 +35,23 @@ class OrderRepositoryTest {
                 .single();
     }
 
+    private int idVanEenTestWerknemer2(){
+        return jdbcClient.sql("select id from werknemers where voornaam = 'Piet'")
+                .query(Integer.class)
+                .single();
+    }
+
+    private int idVanEenTestOrder(){
+        return jdbcClient.sql("select id from orders where omschrijving = 'test1'")
+                .query(Integer.class)
+                .single();
+    }
+    private int idVanEenTestOrder2(){
+        return jdbcClient.sql("select id from orders where omschrijving = 'test2'")
+                .query(Integer.class)
+                .single();
+    }
+
     @Test
     void voegOrderToeVoegtEenOrderToe(){
         int werknemerId = idVanEenTestWerknemer();
@@ -41,22 +60,49 @@ class OrderRepositoryTest {
         assertThat(aantalRecords).isOne();
     }
 
+
+
     @Test
-    void findOrdersByWerknemerIdVindtDeJuisteOrders(){
+    void findOrdersByWerknemerIdVindtDeJuisteOrdersEnIsGesorteerd(){
         int werknemersId = idVanEenTestWerknemer();
         int aantalRecords = JdbcTestUtils.countRowsInTableWhere(jdbcClient, ORDERS_TABLE, "werknemerId = " + werknemersId);
         assertThat(orderRepository.findOrdersByWerknemerId(werknemersId))
-                .hasSize(2)
-                .extracting(OrdersPerWerknemer::getClass)
+                .hasSize(aantalRecords)
+                .extracting(OrdersPerWerknemer::id)
                 .isSorted();
+    }
+
+    @Test
+    void findOrderByIdVindtDeJuisteOrderMetBestaandeId(){
+        int orderId = idVanEenTestOrder();
+        assertThat(orderRepository.findOrderById(orderId)).hasValueSatisfying(order->assertThat(order.getOmschrijving()).isEqualTo("test1"));
+    }
+
+    @Test
+    void findOrderByIdVindtGeenOrderMetOnbestaandeId(){
+        assertThat(orderRepository.findOrderById(Integer.MAX_VALUE)).isEmpty();
+    }
+
+    @Test
+    void updateWijzigtEenOrder(){
+        int orderId = idVanEenTestOrder();
+        int werknemerId = idVanEenTestWerknemer();
+        Order order = new Order(orderId, werknemerId, "test1", BigDecimal.valueOf(5), LocalDateTime.now() );
+        orderRepository.update(order);
+        int aantalAangepasteRecords = JdbcTestUtils.countRowsInTableWhere(jdbcClient, ORDERS_TABLE, "id = "+ orderId + " and werknemerId = " + idVanEenTestWerknemer() +  " and omschrijving = 'test1' and bedrag = 5 and goedgekeurd is not null");
+        assertThat(aantalAangepasteRecords).isOne();
+    }
+
+    @Test
+    void zoekOrderVanWerknemerVanChefMetBestaandeChefIdEnOrderIdGeeftEenOrderTerug(){
+        int chefId =idVanEenTestWerknemer();
+        int werknemerId = idVanEenTestWerknemer2();
+        int orderId = idVanEenTestOrder2();
+
+        assertTrue(orderRepository.zoekOrderVanWerknemerVanChef(chefId, orderId).isPresent());
 
 
-
-
-
-
-
-
+      //new Order(orderId, werknemerId, 'test3', 7, null)
     }
 
 }

@@ -1,6 +1,6 @@
 package be.vdab.orders.orders;
 
-import org.springframework.stereotype.Component;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

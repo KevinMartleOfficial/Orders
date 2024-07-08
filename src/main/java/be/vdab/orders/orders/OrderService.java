@@ -27,8 +27,8 @@ public class OrderService {
 
     @Transactional
     public void updateGoedkeuringOrder(int id, Werknemer werknemer){
-        int orderIdBestaat = orderRepository.findOrderById(id).orElseThrow(()-> new OrderNietGevondenException(id));
-        Order orderWerknemerVanChef = orderRepository.zoekOrderVanWerknemerVanChef(werknemer.getId(), orderIdBestaat).orElseThrow(()->
+        Order orderMetIdBestaat = orderRepository.findOrderById(id).orElseThrow(()-> new OrderNietGevondenException(id));
+        Order orderWerknemerVanChef = orderRepository.zoekOrderVanWerknemerVanChef(werknemer.getId(), orderMetIdBestaat.getId()).orElseThrow(()->
                 new IllegalArgumentException("Order behoort niet tot een ondergeschikte van de chef"));
 
         if(orderWerknemerVanChef.getGoedgekeurd() != null){

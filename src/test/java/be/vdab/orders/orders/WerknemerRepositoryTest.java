@@ -7,7 +7,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+
 @JdbcTest
 @Import(WerknemerRepository.class)
 @Sql("/werknemers.sql")
