@@ -17,9 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @JdbcTest
 @Import(OrderRepository.class)
-@Sql({"/werknemers.sql", "/orders.sql"})
+@Sql({"/werknemers.sql","/orders.sql" })
 class OrderRepositoryTest {
-    private static final String WERKNEMERS_TABLE = "werknemers";
     private static final String ORDERS_TABLE = "orders";
     private final OrderRepository orderRepository;
     private final JdbcClient jdbcClient;
@@ -34,23 +33,12 @@ class OrderRepositoryTest {
                 .query(Integer.class)
                 .single();
     }
-
-    private int idVanEenTestWerknemer2(){
-        return jdbcClient.sql("select id from werknemers where voornaam = 'Piet'")
-                .query(Integer.class)
-                .single();
-    }
-
     private int idVanEenTestOrder(){
         return jdbcClient.sql("select id from orders where omschrijving = 'test1'")
                 .query(Integer.class)
                 .single();
     }
-    private int idVanEenTestOrder2(){
-        return jdbcClient.sql("select id from orders where omschrijving = 'test2'")
-                .query(Integer.class)
-                .single();
-    }
+
 
     @Test
     void voegOrderToeVoegtEenOrderToe(){
@@ -93,16 +81,44 @@ class OrderRepositoryTest {
         assertThat(aantalAangepasteRecords).isOne();
     }
 
+    private void createWerkNemer(int id){
+        String sql = """
+                update werknemers
+                set chefId = ?
+                where voornaam = "Piet"
+                """;
+        jdbcClient.sql(sql)
+                .param(id)
+                .update();
+    }
+
+
+    private int idVanEenTestOrder2(){
+        return jdbcClient.sql("select id from orders where omschrijving = 'test2'")
+                .query(Integer.class)
+                .single();
+    }
     @Test
     void zoekOrderVanWerknemerVanChefMetBestaandeChefIdEnOrderIdGeeftEenOrderTerug(){
+        //zoek id van baas
         int chefId =idVanEenTestWerknemer();
-        int werknemerId = idVanEenTestWerknemer2();
+        //create werknemer met de chefId
+        createWerkNemer(chefId);
         int orderId = idVanEenTestOrder2();
+       assertThat(orderRepository.zoekOrderVanWerknemerVanChef(chefId, orderId )).hasValueSatisfying(order-> assertThat(order.getOmschrijving()).isEqualTo("test2"));
+    }
+    @Test
+    void zoekOrderVanWerknemerDieNietOndergeschiktIsAanDeChefVindtGeenOrder(){
+        int chefId = idVanEenTestWerknemer();
+        int orderId = idVanEenTestOrder2();
+        assertThat(orderRepository.zoekOrderVanWerknemerVanChef(chefId, orderId)).isEmpty();
+    }
 
-        assertTrue(orderRepository.zoekOrderVanWerknemerVanChef(chefId, orderId).isPresent());
-
-
-      //new Order(orderId, werknemerId, 'test3', 7, null)
+    @Test
+    void zoekOrderVanWerknemerVindtGeenOrderAlsDeChefZijnEigenOrdersProbeertGoedTeKeuren(){
+        int chefId = idVanEenTestWerknemer();
+        int orderId = idVanEenTestOrder();
+        assertThat(orderRepository.zoekOrderVanWerknemerVanChef(chefId, orderId)).isEmpty();
     }
 
 }

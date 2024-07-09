@@ -9,25 +9,31 @@ import java.time.LocalDateTime;
 public class Order {
     private final int id;
     private final int werknemerId;
-    private final String omschrijving;
-    private final BigDecimal bedrag;
+    private String omschrijving;
+    private BigDecimal bedrag;
     private LocalDateTime goedgekeurd;
 
     public Order(int id, int werknemerId, String omschrijving, BigDecimal bedrag, LocalDateTime goedgekeurd) {
-        if(omschrijving.isEmpty()){
-            throw new IllegalArgumentException("Omschrijving kan niet leeg zijn");
-        }
-        if(bedrag.compareTo(BigDecimal.ZERO) <= 0){
-            throw new IllegalArgumentException("Bedrag kan niet negatief zijn");
-        }
-
-
+        setOmschrijving(omschrijving);
+        setBedrag(bedrag);
         this.id = id;
         this.werknemerId = werknemerId;
-        this.omschrijving = omschrijving;
-        this.bedrag = bedrag;
         this.goedgekeurd = goedgekeurd;
     }
+
+    private void setOmschrijving(String omschrijving){
+        if(omschrijving.isEmpty()){
+            throw new IllegalArgumentException("Omschrijving kan niet leeg zijn");
+        }this.omschrijving = omschrijving;
+    }
+
+    private void setBedrag(BigDecimal bedrag){
+        if(bedrag.compareTo(BigDecimal.ZERO) <= 0){
+            throw new IllegalArgumentException("Bedrag kan niet negatief zijn");
+        }this.bedrag = bedrag;
+    }
+
+
 
     public void updateGoedgekeurd(){
        goedgekeurd = LocalDateTime.now();

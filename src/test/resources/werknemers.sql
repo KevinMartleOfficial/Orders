@@ -1,4 +1,5 @@
 insert into werknemers(chefId, voornaam, familienaam)
 values (null, 'Jos', 'TheBoss'),
-       (1, 'Piet', 'Pol'),
-       (1, 'Katrien','Sleepy');
+       (4, 'Piet', 'Pol'),
+       (4, 'Katrien','Sleepy');
+
